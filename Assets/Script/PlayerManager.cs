@@ -12,9 +12,9 @@ public class PlayerManager : MonoBehaviour
     public Text scoreText;
     private int score = 0;
 
-
     public GameObject winScreen;
     public GameObject loseScreen;
+    public GameObject plane;
 
     private void Start()
     {
@@ -22,22 +22,22 @@ public class PlayerManager : MonoBehaviour
         GetComponent<Renderer>().material = playerMaterial;
     }
 
-    private void OnTriggerEnter(Collider other)
+    private void OnCollisionEnter(Collision collision)
     {
-        if (other.CompareTag("Ball"))
+        if (collision.gameObject.CompareTag("Ball"))
         {
-            Ball_Scripts ball = other.GetComponent<Ball_Scripts>();
-            
-            if(ball.ballColor == playerMaterial)
+            Ball_Scripts ball = collision.gameObject.GetComponent<Ball_Scripts>();
+
+            if (ball.ballColor == playerMaterial)
             {
-                Destroy(other.gameObject);
+                Destroy(collision.gameObject);
                 ChangeMaterialPlayer();
                 StartCoroutine(SpawnBallAfterDelay(ball.ballColor));
 
                 score++;
                 scoreText.text = "Score: " + score;
 
-                if(score == 10)
+                if (score == 10)
                 {
                     winScreen.SetActive(true);
                 }
@@ -45,11 +45,9 @@ public class PlayerManager : MonoBehaviour
             else
             {
                 loseScreen.SetActive(true);
-                
             }
         }
     }
-
     void ChangeMaterialPlayer()
     {
         playerMaterial = possibleMaterials[Random.Range(0, possibleMaterials.Length)];
@@ -58,12 +56,17 @@ public class PlayerManager : MonoBehaviour
 
     IEnumerator SpawnBallAfterDelay(Material ballColor)
     {
-        yield return new WaitForSeconds(1f); 
+        yield return new WaitForSeconds(1f);
 
-        Vector3 spawnPosition = new Vector3(Random.Range(-10f, 10f), 0.5f, Random.Range(-10f, 10f));
+        Vector3 planeSize = plane.transform.localScale;
+        float xPosition = Random.Range(-planeSize.x * 5f, planeSize.x * 5f);
+        float zPosition = Random.Range(-planeSize.z * 5f, planeSize.z * 5f);
+        Vector3 spawnPosition = new Vector3(xPosition, 0.05f, zPosition);
+
         GameObject newBall = Instantiate(ballPrefab, spawnPosition, Quaternion.identity);
 
         Ball_Scripts newBallScript = newBall.GetComponent<Ball_Scripts>();
         newBallScript.ballColor = ballColor;
     }
+
 }
